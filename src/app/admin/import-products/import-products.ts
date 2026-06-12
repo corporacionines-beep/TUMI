@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { lastValueFrom } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { Product } from '../../models/product';
 import { ProductService } from '../../services/product.service';
@@ -37,7 +38,10 @@ export class ImportProductsComponent {
         const rows: any[] = XLSX.utils.sheet_to_json(sheet);
 
         this.preview = rows.slice(0, 5);
-        this.processProducts(rows);
+        this.processProducts(rows).catch(() => {
+          this.result = { success: 0, errors: ['Error al procesar los productos'] };
+          this.loading = false;
+        });
       } catch (err) {
         this.result = { success: 0, errors: ['Error al leer el archivo. Verifica que sea un Excel válido.'] };
         this.loading = false;
@@ -46,10 +50,9 @@ export class ImportProductsComponent {
     reader.readAsArrayBuffer(file);
   }
 
-  private processProducts(rows: any[]) {
+  private async processProducts(rows: any[]) {
     const errors: string[] = [];
     let success = 0;
-    let completed = 0;
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
@@ -57,7 +60,6 @@ export class ImportProductsComponent {
 
       if (!row.nombre || !row.precio || !row.stock || !row.categoria || !row.imagen) {
         errors.push(`Fila ${rowNum}: faltan campos obligatorios (nombre, precio, stock, categoria, imagen)`);
-        completed++;
         continue;
       }
 
@@ -67,12 +69,10 @@ export class ImportProductsComponent {
 
       if (isNaN(price) || price <= 0) {
         errors.push(`Fila ${rowNum}: precio inválido`);
-        completed++;
         continue;
       }
       if (isNaN(stock) || stock < 0) {
         errors.push(`Fila ${rowNum}: stock inválido`);
-        completed++;
         continue;
       }
 
@@ -94,18 +94,16 @@ export class ImportProductsComponent {
         createdAt: new Date()
       };
 
-      this.productService.addProduct(product).subscribe({
-        next: () => { success++; completed++; this.checkDone(rows.length, success, errors); },
-        error: () => { errors.push(`Fila ${rowNum}: error al guardar`); completed++; this.checkDone(rows.length, success, errors); }
-      });
+      try {
+        await lastValueFrom(this.productService.addProduct(product));
+        success++;
+      } catch {
+        errors.push(`Fila ${rowNum}: error al guardar`);
+      }
     }
-  }
 
-  private checkDone(total: number, success: number, errors: string[]) {
-    if (completed >= total) {
-      this.result = { success, errors };
-      this.loading = false;
-    }
+    this.result = { success, errors };
+    this.loading = false;
   }
 
   downloadTemplate() {
