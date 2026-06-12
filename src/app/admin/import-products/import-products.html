@@ -1,0 +1,97 @@
+<div class="min-h-screen bg-gray-100">
+  <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 sm:px-6 py-4">
+      <div class="flex items-center gap-3">
+        <a href="/admin/dashboard" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Volver
+        </a>
+        <h1 class="text-2xl font-bold">Importar Productos desde Excel</h1>
+      </div>
+    </div>
+  </header>
+
+  <div class="container mx-auto px-4 sm:px-6 py-8">
+    <div class="bg-white rounded-xl shadow-md p-8 max-w-2xl mx-auto">
+      <div class="text-center mb-8">
+        <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-800 mb-2">Sube tu archivo Excel</h2>
+        <p class="text-gray-600">El archivo debe tener las columnas: nombre, descripcion, precio, precio_original, stock, categoria, imagen, rating, reviews, vendidos, envio_gratis, tags</p>
+      </div>
+
+      <button
+        (click)="downloadTemplate()"
+        class="mb-6 w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Descargar Plantilla Excel
+      </button>
+
+      <div class="relative">
+        <input
+          type="file"
+          accept=".xlsx,.xls"
+          (change)="onFileChange($event)"
+          class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer file:transition-all cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors"
+        />
+      </div>
+
+      <div *ngIf="loading" class="mt-6 text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="text-gray-600 mt-2">Procesando archivo...</p>
+      </div>
+
+      <div *ngIf="result" class="mt-6 space-y-4">
+        <div [class]="result.success > 0 ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'" class="border-l-4 p-4 rounded-lg">
+          <p class="font-semibold" [class.text-green-800]="result.success > 0" [class.text-red-800]="result.success === 0">
+            {{ result.success }} producto(s) importado(s) exitosamente
+          </p>
+        </div>
+
+        <div *ngIf="result.errors.length > 0" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+          <p class="font-semibold text-yellow-800 mb-2">{{ result.errors.length }} error(es):</p>
+          <ul class="list-disc list-inside text-sm text-yellow-700 space-y-1">
+            <li *ngFor="let err of result.errors">{{ err }}</li>
+          </ul>
+        </div>
+
+        <button
+          (click)="router.navigate(['/admin/dashboard'])"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+          Ir al Dashboard
+        </button>
+      </div>
+
+      <div *ngIf="preview && !result" class="mt-6">
+        <h3 class="font-semibold text-gray-800 mb-2">Vista previa (primeros registros):</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-3 py-2 text-left">Nombre</th>
+                <th class="px-3 py-2 text-left">Precio</th>
+                <th class="px-3 py-2 text-left">Stock</th>
+                <th class="px-3 py-2 text-left">Categoría</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of preview" class="border-t">
+                <td class="px-3 py-2">{{ row.nombre }}</td>
+                <td class="px-3 py-2">S/.{{ row.precio }}</td>
+                <td class="px-3 py-2">{{ row.stock }}</td>
+                <td class="px-3 py-2">{{ row.categoria }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

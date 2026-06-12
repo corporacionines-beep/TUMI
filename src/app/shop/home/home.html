@@ -1,0 +1,225 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white sticky top-0 z-50 shadow-lg">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between py-3">
+        <div class="flex items-center gap-3">
+          <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <h1 class="text-2xl font-black">TUMI</h1>
+        </div>
+
+        <div class="flex-1 max-w-2xl mx-4 sm:mx-8">
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (input)="onSearchChange()"
+              placeholder="Buscar productos increíbles..."
+              class="w-full px-4 py-2 pl-10 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+            <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+        </div>
+
+        <button (click)="toggleCart()" class="relative bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full transition-all">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span *ngIf="cartCount > 0" class="absolute -top-2 -right-2 bg-yellow-400 text-orange-600 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center animate-pulse">
+            {{cartCount}}
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Promocional -->
+  <div class="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-gray-900 py-3">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-center gap-6 text-sm font-bold">
+        <div class="flex items-center gap-2">
+          <span>📈</span>
+          <span>¡Hasta 90% OFF!</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>📦</span>
+          <span>Envío Gratis en TODO</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>⚡</span>
+          <span>Ofertas Relámpago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categorías -->
+ <!-- Filtros y Categorías -->
+  <div class="bg-white py-4 shadow-sm sticky top-16 z-40">
+    <div class="container mx-auto px-4">
+      <!-- Categorías -->
+      <div class="flex gap-2 overflow-x-auto pb-3 mb-3 border-b">
+        <button
+          (click)="onCategoryChange('all')"
+          [class]="selectedCategory === 'all' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+          class="px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all">
+          🔥 Todos
+        </button>
+        <button
+          *ngFor="let cat of categories"
+          (click)="onCategoryChange(cat)"
+          [class]="selectedCategory === cat ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+          class="px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all">
+          {{cat}}
+        </button>
+      </div>
+
+      <!-- Filtros de Precio y Ordenar -->
+      <div class="flex flex-wrap gap-3 items-center">
+        <!-- Rango de Precio -->
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-semibold text-gray-700">Precio:</span>
+          <select
+            [(ngModel)]="selectedPriceRange"
+            (change)="onPriceRangeChange()"
+            class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option *ngFor="let range of priceRanges" [value]="range.value">{{range.label}}</option>
+          </select>
+        </div>
+
+        <!-- Ordenar por -->
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-semibold text-gray-700">Ordenar:</span>
+          <select
+            [(ngModel)]="sortBy"
+            (change)="onSortChange()"
+            class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option *ngFor="let option of sortOptions" [value]="option.value">{{option.label}}</option>
+          </select>
+        </div>
+
+        <!-- Botón Limpiar Filtros -->
+        <button
+          (click)="clearFilters()"
+          class="ml-auto px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-semibold transition-all">
+          🔄 Limpiar Filtros
+        </button>
+
+        <!-- Contador de Resultados -->
+        <div class="text-sm text-gray-600 font-medium">
+          {{filteredProducts.length}} productos encontrados
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Loading -->
+<app-loading [loading]="loading" message="Cargando productos..."></app-loading>
+
+  <!-- Grid de Productos -->
+  <div class="container mx-auto px-4 py-8">
+
+
+
+
+
+
+
+
+
+    <div class="mb-6">
+      <h2 class="text-2xl font-black text-gray-800 mb-2">🔥 Super Ofertas del Día</h2>
+      <p class="text-gray-600">¡Descuentos increíbles que no puedes perder!</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <!-- Mensaje sin resultados -->
+      <div *ngIf="filteredProducts.length === 0" class="col-span-full text-center py-12">
+        <svg class="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">No se encontraron productos</h3>
+        <p class="text-gray-600 mb-4">Intenta con otros filtros o términos de búsqueda</p>
+        <button (click)="clearFilters()" class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
+          Ver todos los productos
+        </button>
+      </div>
+      <div *ngFor="let product of filteredProducts" class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+
+        <!-- Imagen clickeable -->
+        <div class="relative cursor-pointer" (click)="viewProduct(product.id)">
+          <img [src]="product.imageUrl" [alt]="product.name" class="w-full h-48 object-cover"/>
+
+          <button (click)="toggleFavorite(product.id); $event.stopPropagation()" class="absolute top-2 right-2 p-2 rounded-full transition-all"
+            [class.bg-red-500]="favoriteIds.has(product.id)"
+            [class.text-white]="favoriteIds.has(product.id)"
+            [class.bg-white/90]="!favoriteIds.has(product.id)"
+            [class.text-gray-600]="!favoriteIds.has(product.id)"
+            [class.hover:bg-white]="!favoriteIds.has(product.id)">
+            <svg class="w-5 h-5" [class.fill-current]="favoriteIds.has(product.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </button>
+
+          <div *ngIf="product.tags && product.tags.length > 0" class="absolute top-2 left-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+            {{product.tags[0]}}
+          </div>
+
+          <div *ngIf="product.discount" class="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+            -{{product.discount}}%
+          </div>
+        </div>
+
+        <!-- Contenido de la card -->
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-800 mb-2 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-orange-600 transition-colors" (click)="viewProduct(product.id)">
+            {{product.name}}
+          </h3>
+
+          <div class="flex items-center gap-1 mb-2">
+            <svg class="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            <span class="text-sm font-semibold text-gray-700">{{product.rating}}</span>
+            <span class="text-xs text-gray-500">({{product.reviewCount | number}})</span>
+          </div>
+
+          <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-2xl font-black text-orange-600">S/.{{product.price}}</span>
+            <span *ngIf="product.originalPrice" class="text-sm text-gray-400 line-through">S/.{{product.originalPrice}}</span>
+          </div>
+
+          <div *ngIf="product.sold" class="text-xs text-gray-500 mb-3">
+            🔥 {{product.sold | number}} vendidos
+          </div>
+
+          <div *ngIf="product.isFreeShipping" class="text-xs font-semibold text-green-600 mb-3 flex items-center gap-1">
+            <span>📦</span>
+            Envío GRATIS
+          </div>
+
+          <div class="flex gap-2">
+            <button (click)="viewProduct(product.id); $event.stopPropagation()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-lg transition-all text-sm">
+              Ver detalle
+            </button>
+            <button (click)="buyNow(product); $event.stopPropagation()" class="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-2.5 rounded-lg transition-all shadow-md text-sm">
+              Comprar ahora
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-8 mt-12">
+    <div class="container mx-auto px-4 text-center">
+      <p class="text-sm">© 2025 TUMI - Los mejores precios del mercado</p>
+      <p class="text-xs mt-2">Todos los productos con garantía y envío gratis</p>
+    </div>
+  </footer>
+</div>
